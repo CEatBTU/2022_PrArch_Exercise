@@ -1,0 +1,18 @@
+[DesignChecker]
+work = $HDS_PROJECT_DIR/work/designcheck
+[ModelSim]
+work = $HDS_PROJECT_DIR/work/work
+[ModelSim_Invoke_Dir]
+work = $HDS_PROJECT_DIR\work\sim
+[hdl]
+work = $HDS_PROJECT_DIR/work/hdl
+[hds]
+work = $HDS_PROJECT_DIR/work/hds
+[hds_settings]
+default_library = work
+project_description = Implementation of a RISC-V processor core.
+version = 2
+[library_type]
+work = regular
+[shared]
+others = $HDS_TEAM_HOME/shared.hdp

@@ -1,0 +1,2 @@
+DEFAULT_ARCHITECTURE atom behavioral
+DEFAULT_FILE atom data_memory_behavioral.vhd

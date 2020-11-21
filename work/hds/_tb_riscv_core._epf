@@ -1,0 +1,2 @@
+DEFAULT_ARCHITECTURE atom structural
+DEFAULT_FILE atom tb_riscv_core/structural.bd
