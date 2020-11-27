@@ -13,7 +13,7 @@ USE ieee.std_logic_1164.all;
 
 PACKAGE pkg_sim IS
 	constant c_data_memory_init_file : string := 
-		"C:\Users\bmarc\OneDrive\Desktop\PR_ProcArch_RISCV\work\sim\mem_files\vector_add\data_mem.mem";
+		"/home/brandmar/12976_PrArch_Exercise_Files/work/sim/mem_files/vector_add/data.mem";
 	constant c_instr_memory_init_file : string := 
-		"C:\Users\bmarc\OneDrive\Desktop\PR_ProcArch_RISCV\work\sim\mem_files\vector_add\instr_mem.mem";
+		"/home/brandmar/12976_PrArch_Exercise_Files/work/sim/mem_files/vector_add/instr.mem";
 END pkg_sim;
