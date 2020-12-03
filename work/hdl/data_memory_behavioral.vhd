@@ -32,12 +32,22 @@ ENTITY data_memory IS
 END ENTITY data_memory ;
 
 ARCHITECTURE behavioral OF data_memory IS
-	type t_memory is array(1023 downto 0) of std_logic_vector(31 downto 0);
-	signal s_data_memory : t_memory;
+  
+  constant c_data_lower  : integer := 16#1000000#;
+  constant c_data_upper  : integer := c_data_lower+127;
+  
+  constant c_stack_lower : integer := 16#1000#;
+  constant c_stack_upper : integer := c_stack_lower+127;
+  
+	type t_data_segment  is array(c_data_upper downto c_data_lower)   of std_logic_vector(31 downto 0);
+	type t_stack_segment is array(c_stack_upper downto c_stack_lower) of std_logic_vector(31 downto 0);
+	
+	signal s_data_segment  : t_data_segment;
+	signal s_stack_segment : t_stack_segment;
 BEGIN
   
   	-- simulates data memory
-	proc_mem : process(i_rst, i_clk, i_data_addr, s_data_memory, i_data_rd, i_data_wr)
+	proc_mem : process(i_rst, i_clk, i_data_addr, s_data_segment, s_stack_segment, i_data_rd, i_data_wr)
 		file dmem_init_file : text open read_mode is c_data_memory_init_file;
 
 		variable line_buf   : line;      -- Line buffers
@@ -46,6 +56,7 @@ BEGIN
 		variable address    : integer := 0;
 	begin
 		if i_rst = '1' then
+		  
 			-- Initialize the data memory
 			address := 0;
 			loop
@@ -59,21 +70,39 @@ BEGIN
 	
 					hread(line_buf, value_buf);
 	
-					s_data_memory(address) <= value_buf;
+					s_data_segment(c_data_lower+address) <= value_buf;
 					address              := address + 1;
 				end if;
 			end loop;
-		else
 			
-			assert not(i_data_rd = '1' and i_data_wr = '1') severity failure; 
+		else
+		  
+			assert not(i_data_rd = '1' and i_data_wr = '1') severity failure;
+			  
 			
 			-- assynchronous read
 			if i_data_rd = '1' then
-				o_data_data <= s_data_memory(to_integer(shift_right(unsigned(i_data_addr), 2)));
+			  
+     			if (c_data_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_data_upper) then
+				  o_data_data <= s_data_segment(to_integer(shift_right(unsigned(i_data_addr), 2)));
+			  elsif (c_stack_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_stack_upper) then
+				  o_data_data <= s_stack_segment(to_integer(shift_right(unsigned(i_data_addr), 2)));
+			  else
+			      assert false report "Data Address not a valid range in the data memory." severity failure;
+			  end if;
+			  
 				
 			-- syncrhonous write
 			elsif rising_edge(i_clk) and i_data_wr = '1' then
-				s_data_memory(to_integer(shift_right(unsigned(i_data_addr), 2))) <= i_data_data;
+			  
+     			if (c_data_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_data_upper) then				
+     			  s_data_segment(to_integer(shift_right(unsigned(i_data_addr), 2))) <= i_data_data;
+			  elsif (c_stack_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_stack_upper) then		
+     			  s_stack_segment(to_integer(shift_right(unsigned(i_data_addr), 2))) <= i_data_data;
+			  else
+			      assert false report "Data Address not a valid range in the data memory." severity failure;
+			  end if;			  			  
+
 			end if;
 		end if;
 	end process;
