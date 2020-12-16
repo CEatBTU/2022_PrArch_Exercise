@@ -55,13 +55,24 @@ BEGIN
 		variable value_buf  : std_logic_vector(31 downto 0);
 		variable address    : integer := 0;
 	begin
-		if i_rst = '1' then
+		if i_rst'event and i_rst = '1' then
 		  
-			-- Initialize the data memory
+			address := 0;
+		  -- Initialize the stack
+		  while address < 128 loop
+			  s_stack_segment(c_stack_lower+address) <= (others => '0');
+				address              := address + 1;
+			end loop;
+		  
+			-- Initialize the data segment
 			address := 0;
 			loop
 				if endfile(dmem_init_file) then
-					exit;
+    		   	while address < 128 loop
+    			     s_data_segment(c_data_lower+address) <= (others => '0');
+    			    	address              := address + 1;
+   			    end loop;
+    					exit;
 				else
 					readline(dmem_init_file, line_buf);
 					read(line_buf, str_buf);
@@ -74,6 +85,7 @@ BEGIN
 					address              := address + 1;
 				end if;
 			end loop;
+			
 			
 		else
 		  
