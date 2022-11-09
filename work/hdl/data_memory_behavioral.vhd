@@ -33,10 +33,10 @@ END ENTITY data_memory ;
 
 ARCHITECTURE behavioral OF data_memory IS
   
-  constant c_data_lower  : integer := 16#1000000#;
+  constant c_data_lower  : integer := 16#10000000# / 4;
   constant c_data_upper  : integer := c_data_lower+127;
   
-  constant c_stack_lower : integer := 16#1000#;
+  constant c_stack_lower : integer := 16#1000# / 4;
   constant c_stack_upper : integer := c_stack_lower+127;
   
 	type t_data_segment  is array(c_data_upper downto c_data_lower)   of std_logic_vector(31 downto 0);
@@ -94,30 +94,32 @@ BEGIN
 			
 			-- assynchronous read
 			if i_data_rd = '1' then
-			  
-     			if (c_data_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_data_upper) then
-				  o_data_data <= s_data_segment(to_integer(shift_right(unsigned(i_data_addr), 2)));
-			  elsif (c_stack_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_stack_upper) then
-				  o_data_data <= s_stack_segment(to_integer(shift_right(unsigned(i_data_addr), 2)));
-			  else
-			      assert false report "Data Address not a valid range in the data memory." severity failure;
-			  end if;
-			  
-				
-			-- syncrhonous write
-			elsif rising_edge(i_clk) and i_data_wr = '1' then
-			  
-     			if (c_data_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_data_upper) then				
-     			  s_data_segment(to_integer(shift_right(unsigned(i_data_addr), 2))) <= i_data_data;
-			  elsif (c_stack_lower <= unsigned(i_data_addr) and unsigned(i_data_addr) < c_stack_upper) then		
-     			  s_stack_segment(to_integer(shift_right(unsigned(i_data_addr), 2))) <= i_data_data;
-			  else
-			      assert false report "Data Address not a valid range in the data memory." severity failure;
-			  end if;			  			  
+			    address := to_integer(shift_right(unsigned(i_data_addr), 2));
+     			if (c_data_lower <= address and address < c_data_upper) then
+					o_data_data <= s_data_segment(address);
+				elsif (c_stack_lower <= address and address < c_stack_upper) then
+					o_data_data <= s_stack_segment(address);
+				else
+			    	assert false report "Data Address not a valid range in the data memory." severity warning;
+				end if;
 
+			else
+				o_data_data <= (others => 'X');
+				
+				-- syncrhonous write
+				if rising_edge(i_clk) and i_data_wr = '1' then
+					address := to_integer(shift_right(unsigned(i_data_addr), 2));
+				
+					if (c_data_lower <= address and address < c_data_upper) then				
+						s_data_segment(address) <= i_data_data;
+					elsif (c_stack_lower <= address and address < c_stack_upper) then		
+						s_stack_segment(address) <= i_data_data;
+					else
+						assert false report "Data Address not a valid range in the data memory." severity warning;
+					end if;
+				end if;
 			end if;
 		end if;
 	end process;
   
 END ARCHITECTURE behavioral;
-
