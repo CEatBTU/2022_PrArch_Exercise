@@ -89,6 +89,12 @@ BEGIN
 			when OP_SLL =>
 				output <= std_logic_vector(shift_left(unsigned(i_A), samt));
 
+			when OP_A =>
+				output <= i_A;
+
+			when OP_B =>
+				output <= i_B;
+
 			when others =>
 				output <= (others => '0');
 
